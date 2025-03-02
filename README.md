@@ -2,6 +2,8 @@
 
 A simple screensaver (can be converted if properly built) that can represent the messy mental state one can be in.
 
+Just note: it only escapes when you press a button! You can interact with the scene with mouse input!!
+
 ## how the hell can i get this to work?
 
 As far as I am aware, this only works on Windows machines as of now (as Windows is quite literally built on C#). So, if you have a Windows machine, fork or do whatever you please with the files, and change the exe file IN the folder to "MentalStates.scr" and it should work. ***DO NOT REMOVE IT FROM THE FOLDER!! IT NEEDS THE DLL!!***
