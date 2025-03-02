@@ -6,9 +6,9 @@ Just note: it only escapes when you press a button! You can interact with the sc
 
 ## how the hell can i get this to work?
 
-As far as I am aware, this only works on Windows machines (as Windows is quite literally built on C#; I'm not sure if the exe works for Linux/Unix (MacOS too!) because they require different extensions for screensavers). So, if you have a Windows machine, fork or do whatever you please with the files, and change the exe file IN the folder to "MentalStates.scr" and it should work. ***DO NOT REMOVE IT FROM THE FOLDER!! IT NEEDS THE DLL!!***
+As far as I am aware, this only works on **Windows machines** (as Windows is quite literally built on C#; **I'm not sure if the exe works for Linux/Unix (MacOS too!)** because they require different extensions for screensavers). So, if you have a Windows machine, fork or do whatever you please with the files, and change the exe file IN the folder to "MentalStates.scr" and it should work. ***DO NOT REMOVE IT FROM THE FOLDER!! IT NEEDS THE DLL!!***
 
-Once you're finished changing the file type, right click and "install" it. Should work! Check your screensavers in your settings.
+Once you're finished changing the file type, **right click and "install" it**. Should work! Check your screensavers in your settings.
 
 If it doesn't, try searching up other ways to get this to work. This is the quickest method I know at the top of my head.
 
