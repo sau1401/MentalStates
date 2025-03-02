@@ -26,14 +26,14 @@ namespace MentalStates
         private List<Ripple> ripples = new();
         private List<Shockwave> shockwaves = new();
 
-        private Random random = new();
-        private float cloudOffset = 0;
+        private Random random = new(); //random for randomness
+        private float cloudOffset = 0; //do not change!!
         private float paranoiaIntensity = 0.0f;
         private int redAnger = 0;
-        private float distortionStrength = 5.0f;
+        private float distortionStrength = 5.0f; //can change if you wish
 
-        //private PointF spherePosition = new(100, 100);
-        private PointF lastMousePosition;
+        //private PointF spherePosition = new(100, 100); was supposed to be for somethin but it never worked lol
+        private PointF lastMousePosition; //storing the mouse globally
         private List<PointF> echoTrail = new();
 
         /*
@@ -73,58 +73,60 @@ namespace MentalStates
                 PointF currentMousePosition = this.PointToClient(Cursor.Position); //get the mouse position
                 paranoiaIntensity = (float)(Math.Sin(DateTime.Now.TimeOfDay.TotalMilliseconds / 300.0) * 20); //set the intensity for the "paranoia" around the sphere
 
-                if (echoTrail.Count == 0 || Distance(echoTrail[^1], currentMousePosition) > 5) //and then let's calculate the distance
+                if (echoTrail.Count == 0 || Distance(echoTrail[^1], currentMousePosition) > 5) //and then let's calculate the distance from the current mouse
                 {
-                    echoTrail.Add(currentMousePosition);
+                    echoTrail.Add(currentMousePosition); //add the trail you see
                 }
 
-                if (echoTrail.Count > 20)
+                if (echoTrail.Count > 20) //if it gets too large, remove the first instance generated
                 {
                     echoTrail.RemoveAt(0);
                 }
 
-                cloudOffset = (cloudOffset + 0.05f) % ClientSize.Width;
+                cloudOffset = (cloudOffset + 0.05f) % ClientSize.Width; //generate that static you see
 
 
                 foreach (var sphere in spheres)
                 {
-                    sphere.Update(ClientSize, ripples);
+                    sphere.Update(ClientSize, ripples); //update the sphere based on the size of the screen and the ripples
                 }
+ 
+                ripples.RemoveAll(r => r.Opacity <= 0); //remove them slowly
+                shockwaves.RemoveAll(r => r.Opacity <= 0); //same with the anger waves
 
-                ripples.RemoveAll(r => r.Opacity <= 0);
-                shockwaves.RemoveAll(r => r.Opacity <= 0);
+                lastMousePosition = currentMousePosition;  //change mouse cursor position
 
-                lastMousePosition = currentMousePosition;
-
-                if (redAnger > 0) redAnger -= 5;
+                if (redAnger > 0) redAnger -= 5; //and then change the anger tint here
 
                 this.Invalidate();
             };
-            animationTimer.Start();
+            animationTimer.Start(); //start the timer!! needs this to count what it needs to do!
 
-            this.Paint += CombinedPaint;
-            this.KeyDown += HandleExit;
-            this.MouseClick += ReleaseShockwave;
+            this.Paint += CombinedPaint; //generate the screensaver itself now
+            this.KeyDown += HandleExit; //handle the exit based on KEY input, not mouse
+            this.MouseClick += ReleaseShockwave; //when you click, release that anger wave
         }
+
+        //everything below should be up to you to explore! search up different ways to modify these accordingly
 
         /*
          * CombinedPaint
          * 
-         * 
+         * Combines all the effects. Remmeber, they are in order, make sure the ones on the top are painted last!!
         */
         private void CombinedPaint(object sender, PaintEventArgs e)
         {
-            DrawDistortion(e);
+            DrawDistortion(e); //first
             DrawGlitchEffect(e);
             DrawSpheres(sender, e);
             DrawEchoes(e);
-            DrawParanoiaEffect(e);
-        }
+            DrawParanoiaEffect(e); //painted last
+        } 
 
         /*
          * DrawGlitchEffect
          * 
-         * 
+         * A subtle effect. You can remove it but it might take away from the experience slightly. Just know where to remove it!
         */
         private void DrawGlitchEffect(PaintEventArgs e)
         {
@@ -143,7 +145,7 @@ namespace MentalStates
         /*
          * DrawParanoiaEffect
          * 
-         * 
+         *  The small red circle around your mouse that follows you...
         */
         private void DrawParanoiaEffect(PaintEventArgs e)
         {
@@ -162,7 +164,7 @@ namespace MentalStates
         /*
          * DrawDistortion
          * 
-         * 
+         * Draws the distortion effect you see; the lines that make it look like a crt screen almost.
         */
         private void DrawDistortion(PaintEventArgs e)
         {
@@ -181,7 +183,7 @@ namespace MentalStates
         /*
          * DrawEchoes
          * 
-         * 
+         * Draws those echoes you see near your cursor.
         */
         private void DrawEchoes(PaintEventArgs e)
         {
@@ -200,7 +202,7 @@ namespace MentalStates
         /*
          * DrawSpheres
          * 
-         * 
+         * Draws the spheres and other related objects.
         */
         private void DrawSpheres(object sender, PaintEventArgs e)
         {
@@ -212,6 +214,7 @@ namespace MentalStates
             int centerX = this.ClientSize.Width / 2;
             int centerY = this.ClientSize.Height / 2;
 
+            //generate ripples when the spheres bounce off the screen sides
             foreach (var ripple in ripples)
             {
                 using (Pen pen = new Pen(Color.FromArgb(ripple.Opacity, ripple.Color), 2))
@@ -222,6 +225,7 @@ namespace MentalStates
                 ripple.Update();
             }
 
+            //same here
             foreach (var shockwave in shockwaves)
             {
                 using (Pen pen = new Pen(Color.FromArgb(shockwave.Opacity, Color.Red), 4))
@@ -232,6 +236,7 @@ namespace MentalStates
                 shockwave.Update();
             }
 
+            //keep the spheres in the screen and prevent crashes
             foreach (var sphere in spheres)
             {
                 float depth = 1.0f / (1.0f + sphere.Z / 100.0f);
@@ -253,6 +258,7 @@ namespace MentalStates
                 }
             }
 
+            //generate a tint when we click!
             if (redAnger > 0)
             {
                 using (SolidBrush redTint = new SolidBrush(Color.FromArgb(redAnger, Color.Red)))
@@ -265,16 +271,17 @@ namespace MentalStates
         /*
          * DrawClouds
          * 
-         * 
+         * Draws the static in the backgtround
+         *
         */
         private void DrawClouds(Graphics g)
         {
-            int cloudDensity = 200;
+            int cloudDensity = 200; //how many static "dots" you want
             for (int i = 0; i < cloudDensity; i++)
             {
-                int x = random.Next(ClientSize.Width);
-                int y = random.Next(ClientSize.Height);
-                int alpha = random.Next(10, 50);
+                int x = random.Next(ClientSize.Width); //width
+                int y = random.Next(ClientSize.Height); //height
+                int alpha = random.Next(10, 50); //sizes of them
 
                 using (SolidBrush brush = new SolidBrush(Color.FromArgb(alpha, 200, 200, 200)))
                 {
@@ -286,7 +293,8 @@ namespace MentalStates
         /*
          * ColorFromHSV
          * 
-         * 
+         * Random color generator. Feel free to edit this.
+         *
         */
         private static Color ColorFromHSV(double hue, double saturation, double value)
         {
@@ -318,13 +326,14 @@ namespace MentalStates
         private string GetPsychologicalState()
         {
             string[] states = { "Synesthesia", "Mania", "Panic", "Insomnia", "Depression", "Euphoria", "Dissociation" };
-            return states[random.Next(states.Length)];
+            return states[random.Next(states.Length)]; //add more states if you want! just know that these are all subjective; left for anyone to edit and interpret!
         }
 
         /*
          * HandleExit
          * 
-         * 
+         * Custom fade exit.
+         *
         */
         private void HandleExit(object sender, KeyEventArgs e)
         {
@@ -334,6 +343,9 @@ namespace MentalStates
             }
         }
 
+        /*
+        * FadeOutAndClose 
+        */
         private async void FadeOutAndClose()
         {
             for (int opacity = 100; opacity >= 0; opacity -= 5)
@@ -346,25 +358,27 @@ namespace MentalStates
 
         /*
          * ReleaseShockwave
-         * 
+         *  
+         * Releases that anger wave
          * 
         */
         private void ReleaseShockwave(object sender, MouseEventArgs e)
         {
             shockwaves.Add(new Shockwave(e.X, e.Y));
-            redAnger = 100;
+            redAnger = 100; //change the tint here
         }
 
         /*
          * Distance
          * 
          * 
+         *
         */
-        private float Distance(PointF p1, PointF p2)
+        private float Distance(PointF p1, PointF p2) //calculate distance with this formula; current x - next x and whatnot
         {
             float dx = p1.X - p2.X;
             float dy = p1.Y - p2.Y;
-            return (float)Math.Sqrt(dx * dx + dy * dy);
+            return (float)Math.Sqrt(dx * dx + dy * dy); //trig algorithm lol
         }
     }
 
@@ -407,6 +421,7 @@ namespace MentalStates
             Y += VelocityY;
             Z += VelocityZ;
 
+            //the states were never properly implemented. you can add different states and switch statements here to experiment with them!
             if (X - Radius < -clientSize.Width / 2 || X + Radius > clientSize.Width / 2)
             {
                 VelocityX = -VelocityX;
@@ -434,7 +449,7 @@ namespace MentalStates
         /*
          * Ripple
          * 
-         * 
+         * Generate ripple position and color.
         */
         public Ripple(float x, float y, Color color)
         {
@@ -446,7 +461,7 @@ namespace MentalStates
         /*
          * Update
          * 
-         * 
+         * Update the size
         */
         public void Update()
         {
@@ -467,7 +482,7 @@ namespace MentalStates
         /*
          * ShockWave
          * 
-         * 
+         * Same logic as the ripple almost
         */
         public Shockwave(int x, int y)
         {
@@ -479,7 +494,7 @@ namespace MentalStates
         /*
          * Update
          * 
-         * 
+         * Growth us quicker and more rapid
         */
         public void Update()
         {
@@ -498,7 +513,7 @@ namespace MentalStates
         /*
          * Echo
          * 
-         * 
+         * Echoes are small and have random colors
         */
         public Echo(PointF position, Color color)
         {
@@ -509,7 +524,7 @@ namespace MentalStates
         /*
          * Update
          * 
-         * 
+         * Their fade.
         */
         public void Update()
         {
@@ -519,7 +534,7 @@ namespace MentalStates
         /*
          * Draw
          * 
-         * 
+         * Generate them accordingly
         */
         public void Draw(Graphics g)
         {
