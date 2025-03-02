@@ -13,3 +13,7 @@ Once you're finished changing the file type, right click and "install" it. Shoul
 If it doesn't, try searching up other ways to get this to work. This is the quickest method I know at the top of my head.
 
 You can also just keep it as an .exe and run it whenever you wanna walk away from your PC/laptop, your choice!
+
+## editing this
+
+If you want to change the speed of the spheres or add just other customization options, go into the Form1.cs file and look around. But, if you're stuck with what does what, do try to search it up before editing it! Things are in specific places for a reason and mostly everything is laid out for ease of reading. You can also add a "settings" option for the screensaver if you know how to do that!
