@@ -39,40 +39,41 @@ namespace MentalStates
         /*
          * ScreensaverForm
          * 
+         * This initalizes the screensaver! 
          * 
         */
         public ScreensaverForm()
         {
-            this.WindowState = FormWindowState.Maximized;
-            this.FormBorderStyle = FormBorderStyle.None;
-            this.TopMost = true;
-            this.BackColor = Color.Black;
-            this.DoubleBuffered = true;
+            this.WindowState = FormWindowState.Maximized; //maximum size
+            this.FormBorderStyle = FormBorderStyle.None; //no border around the screensaver exe
+            this.TopMost = true; //always on top
+            this.BackColor = Color.Black; //background color
+            this.DoubleBuffered = true; //somethin about the frames; makes it look less janky
 
-            startTime = DateTime.Now;
+            startTime = DateTime.Now; //used for exit later on
 
-            for (int i = 0; i < 15; i++)
+            for (int i = 0; i < 15; i++) //create 15 spheres
             {
                 spheres.Add(new Sphere(
-                    random.Next(-300, 300),
+                    random.Next(-300, 300), //random sizes
                     random.Next(-200, 200),
                     random.Next(5, 15),
-                    random.NextFloat(-6f, 6f),
+                    random.NextFloat(-6f, 6f), //random speeds
                     random.NextFloat(-6f, 6f),
                     random.NextFloat(-2f, 2f),
-                    ColorFromHSV(random.Next(0, 360), 1.0, 1.0),
-                    GetPsychologicalState()
+                    ColorFromHSV(random.Next(0, 360), 1.0, 1.0), //random color
+                    GetPsychologicalState() //random state
                 ));
             }
 
-            animationTimer = new System.Windows.Forms.Timer { Interval = 1 };
+            animationTimer = new System.Windows.Forms.Timer { Interval = 1 }; //start the animation; smaller the faster; 16 is around 60 FPS approx
 
             animationTimer.Tick += (s, e) =>
             {
-                PointF currentMousePosition = this.PointToClient(Cursor.Position);
-                paranoiaIntensity = (float)(Math.Sin(DateTime.Now.TimeOfDay.TotalMilliseconds / 300.0) * 20);
+                PointF currentMousePosition = this.PointToClient(Cursor.Position); //get the mouse position
+                paranoiaIntensity = (float)(Math.Sin(DateTime.Now.TimeOfDay.TotalMilliseconds / 300.0) * 20); //set the intensity for the "paranoia" around the sphere
 
-                if (echoTrail.Count == 0 || Distance(echoTrail[^1], currentMousePosition) > 5)
+                if (echoTrail.Count == 0 || Distance(echoTrail[^1], currentMousePosition) > 5) //and then let's calculate the distance
                 {
                     echoTrail.Add(currentMousePosition);
                 }
