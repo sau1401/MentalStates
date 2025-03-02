@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.Runtime.CompilerServices;
 using System.Windows.Forms;
 
 namespace MentalStates
@@ -17,15 +18,29 @@ namespace MentalStates
 
     public partial class ScreensaverForm : Form
     {
+        //Variables
         private System.Windows.Forms.Timer animationTimer;
         private DateTime startTime;
+
         private List<Sphere> spheres = new();
         private List<Ripple> ripples = new();
+        private List<Shockwave> shockwaves = new();
+
         private Random random = new();
         private float cloudOffset = 0;
-        // private int lightningCooldown = 0;
-        // private List<Lightning> lightnings = new();
+        private float paranoiaIntensity = 0.0f;
+        private int redAnger = 0;
+        private float distortionStrength = 5.0f;
 
+        //private PointF spherePosition = new(100, 100);
+        private PointF lastMousePosition;
+        private List<PointF> echoTrail = new();
+
+        /*
+         * ScreensaverForm
+         * 
+         * 
+        */
         public ScreensaverForm()
         {
             this.WindowState = FormWindowState.Maximized;
@@ -36,7 +51,7 @@ namespace MentalStates
 
             startTime = DateTime.Now;
 
-            for (int i = 0; i < 20; i++)
+            for (int i = 0; i < 15; i++)
             {
                 spheres.Add(new Sphere(
                     random.Next(-300, 300),
@@ -50,24 +65,142 @@ namespace MentalStates
                 ));
             }
 
-            animationTimer = new System.Windows.Forms.Timer { Interval = 30 };
+            animationTimer = new System.Windows.Forms.Timer { Interval = 1 };
+
             animationTimer.Tick += (s, e) =>
             {
+                PointF currentMousePosition = this.PointToClient(Cursor.Position);
+                paranoiaIntensity = (float)(Math.Sin(DateTime.Now.TimeOfDay.TotalMilliseconds / 300.0) * 20);
+
+                if (echoTrail.Count == 0 || Distance(echoTrail[^1], currentMousePosition) > 5)
+                {
+                    echoTrail.Add(currentMousePosition);
+                }
+
+                if (echoTrail.Count > 20)
+                {
+                    echoTrail.RemoveAt(0);
+                }
+
                 cloudOffset = (cloudOffset + 0.05f) % ClientSize.Width;
+
+
                 foreach (var sphere in spheres)
                 {
                     sphere.Update(ClientSize, ripples);
                 }
+
                 ripples.RemoveAll(r => r.Opacity <= 0);
+                shockwaves.RemoveAll(r => r.Opacity <= 0);
+
+                lastMousePosition = currentMousePosition;
+
+                if (redAnger > 0) redAnger -= 5;
+
                 this.Invalidate();
             };
             animationTimer.Start();
 
-            this.Paint += DrawSpheres;
+            this.Paint += CombinedPaint;
             this.KeyDown += HandleExit;
-            this.MouseMove += HandleExit;
+            this.MouseClick += ReleaseShockwave;
         }
 
+        /*
+         * CombinedPaint
+         * 
+         * 
+        */
+        private void CombinedPaint(object sender, PaintEventArgs e)
+        {
+            DrawDistortion(e);
+            DrawGlitchEffect(e);
+            DrawSpheres(sender, e);
+            DrawEchoes(e);
+            DrawParanoiaEffect(e);
+        }
+
+        /*
+         * DrawGlitchEffect
+         * 
+         * 
+        */
+        private void DrawGlitchEffect(PaintEventArgs e)
+        {
+            if (random.NextDouble() < 0.01)
+            {
+                int glitchX = random.Next(1, 10);
+                int glitchY = random.Next(0, this.ClientSize.Height - glitchX);
+
+                using (Brush glitchBrush = new SolidBrush(Color.FromArgb(30, random.Next(256), random.Next(256), random.Next(256))))
+                {
+                    e.Graphics.FillRectangle(glitchBrush, 0, glitchY, this.ClientSize.Width, glitchX);
+                }
+            }
+        }
+
+        /*
+         * DrawParanoiaEffect
+         * 
+         * 
+        */
+        private void DrawParanoiaEffect(PaintEventArgs e)
+        {
+            float jitterX = (float)(random.NextDouble() * paranoiaIntensity - paranoiaIntensity / 2);
+            float jitterY = (float)(random.NextDouble() * paranoiaIntensity - paranoiaIntensity / 2);
+
+            float targetX = lastMousePosition.X + jitterX;
+            float targetY = lastMousePosition.Y + jitterY;
+
+            using (Pen redPen = new Pen(Color.FromArgb(50, 255, 0, 0), 2))
+            {
+                e.Graphics.DrawEllipse(redPen, targetX - 10, targetY - 10, 20, 20);
+            }
+        }
+
+        /*
+         * DrawDistortion
+         * 
+         * 
+        */
+        private void DrawDistortion(PaintEventArgs e)
+        {
+            int waveStrength = (int)(Math.Sin(DateTime.Now.TimeOfDay.TotalMilliseconds / 100.0) * distortionStrength);
+
+            for (int y = 0; y < this.ClientSize.Height; y += 5)
+            {
+                int offset = (int)(Math.Sin(y / 10.0 + DateTime.Now.TimeOfDay.TotalMilliseconds / 500.0) * waveStrength);
+                using (Pen distortionPen = new Pen(Color.FromArgb(5, Color.DarkGray), 1))
+                {
+                    e.Graphics.DrawLine(distortionPen, 0, y + offset, this.ClientSize.Width, y + offset);
+                }
+            }
+        }
+
+        /*
+         * DrawEchoes
+         * 
+         * 
+        */
+        private void DrawEchoes(PaintEventArgs e)
+        {
+            for (int i = 0; i < echoTrail.Count; i++)
+            {
+                float alpha = (int)(255 * ((float)i / echoTrail.Count));
+                float decay = (float)(1.0 - (float)i / echoTrail.Count);
+                using (Pen echoPen = new Pen(Color.FromArgb((int)(alpha * decay), ColorFromHSV(i * 15 % 360, 1, 1)), 1))
+                {
+                    float offset = (echoTrail.Count - i) * 0.3f;
+                    e.Graphics.DrawEllipse(echoPen, echoTrail[i].X - offset, echoTrail[i].Y - offset, offset * 2, offset * 2);
+                }
+            }
+        }
+
+        /*
+         * DrawSpheres
+         * 
+         * 
+        */
         private void DrawSpheres(object sender, PaintEventArgs e)
         {
             Graphics g = e.Graphics;
@@ -86,6 +219,16 @@ namespace MentalStates
                     g.DrawEllipse(pen, ripple.X - size / 2, ripple.Y - size / 2, size, size);
                 }
                 ripple.Update();
+            }
+
+            foreach (var shockwave in shockwaves)
+            {
+                using (Pen pen = new Pen(Color.FromArgb(shockwave.Opacity, Color.Red), 4))
+                {
+                    int size = (int)(shockwave.Radius * 2);
+                    g.DrawEllipse(pen, shockwave.X - size / 2, shockwave.Y - size / 2, size, size);
+                }
+                shockwave.Update();
             }
 
             foreach (var sphere in spheres)
@@ -108,8 +251,21 @@ namespace MentalStates
                     g.FillEllipse(brush, x - size / 2, y - size / 2, size, size);
                 }
             }
+
+            if (redAnger > 0)
+            {
+                using (SolidBrush redTint = new SolidBrush(Color.FromArgb(redAnger, Color.Red)))
+                {
+                    g.FillRectangle(redTint, this.ClientRectangle);
+                }
+            }
         }
 
+        /*
+         * DrawClouds
+         * 
+         * 
+        */
         private void DrawClouds(Graphics g)
         {
             int cloudDensity = 200;
@@ -126,6 +282,11 @@ namespace MentalStates
             }
         }
 
+        /*
+         * ColorFromHSV
+         * 
+         * 
+        */
         private static Color ColorFromHSV(double hue, double saturation, double value)
         {
             int hi = Convert.ToInt32(Math.Floor(hue / 60)) % 6;
@@ -148,18 +309,61 @@ namespace MentalStates
             };
         }
 
+        /*
+         * GetPsychologicalState
+         * 
+         * 
+        */
         private string GetPsychologicalState()
         {
             string[] states = { "Synesthesia", "Mania", "Panic", "Insomnia", "Depression", "Euphoria", "Dissociation" };
             return states[random.Next(states.Length)];
         }
 
-        private void HandleExit(object sender, EventArgs e)
+        /*
+         * HandleExit
+         * 
+         * 
+        */
+        private void HandleExit(object sender, KeyEventArgs e)
         {
             if ((DateTime.Now - startTime).TotalSeconds > 3)
             {
-                this.Close();
+                FadeOutAndClose();
             }
+        }
+
+        private async void FadeOutAndClose()
+        {
+            for (int opacity = 100; opacity >= 0; opacity -= 5)
+            {
+                this.Opacity = opacity / 100.0;
+                await System.Threading.Tasks.Task.Delay(50);
+            }
+            this.Close();
+        }
+
+        /*
+         * ReleaseShockwave
+         * 
+         * 
+        */
+        private void ReleaseShockwave(object sender, MouseEventArgs e)
+        {
+            shockwaves.Add(new Shockwave(e.X, e.Y));
+            redAnger = 100;
+        }
+
+        /*
+         * Distance
+         * 
+         * 
+        */
+        private float Distance(PointF p1, PointF p2)
+        {
+            float dx = p1.X - p2.X;
+            float dy = p1.Y - p2.Y;
+            return (float)Math.Sqrt(dx * dx + dy * dy);
         }
     }
 
@@ -171,6 +375,13 @@ namespace MentalStates
         public Color Color;
         public string PsychologicalState;
 
+        /*
+         * Sphere
+         * 
+         * Generates a sphere based on the position, size, color, and the made-up arbitary states.
+         * 
+         * 
+        */
         public Sphere(float x, float y, float radius, float vx, float vy, float vz, Color color, string state)
         {
             X = x;
@@ -184,6 +395,11 @@ namespace MentalStates
             PsychologicalState = state;
         }
 
+        /*
+         * Update
+         * 
+         * 
+        */
         public void Update(Size clientSize, List<Ripple> ripples)
         {
             X += VelocityX;
@@ -214,6 +430,11 @@ namespace MentalStates
         public int Opacity = 255;
         public Color Color;
 
+        /*
+         * Ripple
+         * 
+         * 
+        */
         public Ripple(float x, float y, Color color)
         {
             X = x;
@@ -221,10 +442,95 @@ namespace MentalStates
             Color = color;
         }
 
+        /*
+         * Update
+         * 
+         * 
+        */
         public void Update()
         {
             Radius += 2;
             Opacity -= 5;
         }
+    }
+
+    public class Shockwave
+    {
+        public int X { get; }
+        public int Y { get; }
+        public float Radius { get; private set; }
+        public int Opacity { get; private set; } = 255;
+        public float GrowthRate { get; } = 20f;
+        public float MaxRadius { get; }
+
+        /*
+         * ShockWave
+         * 
+         * 
+        */
+        public Shockwave(int x, int y)
+        {
+            X = x;
+            Y = y;
+            MaxRadius = 2000;
+        }
+
+        /*
+         * Update
+         * 
+         * 
+        */
+        public void Update()
+        {
+            Radius += GrowthRate;
+            Opacity = (int)(255 * (1 - Radius / MaxRadius));
+            if (Opacity < 0) Opacity = 0;
+        }
+    }
+
+    public class Echo
+    {
+        public PointF Position { get; }
+        public Color Color { get; }
+        private int alpha = 255;
+
+        /*
+         * Echo
+         * 
+         * 
+        */
+        public Echo(PointF position, Color color)
+        {
+            Position = position;
+            Color = color;
+        }
+
+        /*
+         * Update
+         * 
+         * 
+        */
+        public void Update()
+        {
+            alpha -= 5;
+        }
+
+        /*
+         * Draw
+         * 
+         * 
+        */
+        public void Draw(Graphics g)
+        {
+            if (alpha > 0)
+            {
+                using (Brush brush = new SolidBrush(Color.FromArgb(alpha, Color)))
+                {
+                    g.FillEllipse(brush, Position.X - 10, Position.Y - 10, 20, 20);
+                }
+            }
+        }
+
+        public bool IsFaded => alpha <= 0;
     }
 }
