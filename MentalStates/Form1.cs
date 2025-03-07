@@ -124,22 +124,18 @@ namespace MentalStates
             this.KeyDown += HandleExit;
             this.MouseClick += ReleaseShockwave;
         }
+
+        /*
+        * GetFloatSetting
+        *
+        * Changes the number according to the cultural settings of the laptop/PC.
+        */
         public static float GetFloatSetting(string key, string defaultValue = "0")
         {
             string value = SettingsManager.GetSetting(key, defaultValue);
             if (!float.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out float result))
             {
                 result = float.Parse(defaultValue, CultureInfo.InvariantCulture);
-            }
-            return result;
-        }
-
-        public static int GetIntSetting(string key, string defaultValue = "0")
-        {
-            string value = SettingsManager.GetSetting(key, defaultValue);
-            if (!int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out int result))
-            {
-                result = int.Parse(defaultValue, CultureInfo.InvariantCulture);
             }
             return result;
         }
@@ -311,7 +307,7 @@ namespace MentalStates
         */
         private void DrawClouds(Graphics g)
         {
-            float backgroundSize = float backgroundSize = GetFloatSetting("BackgroundIntensity", "0"); //initial user intensity
+            float backgroundSize = GetFloatSetting("BackgroundIntensity", "0"); //initial user intensity
             int staticDensity = (int)(200 * (1 + backgroundSize / 10)); //scale the density based on the intensity
             int maxStaticSize = Math.Max(2, (int)(1 + backgroundSize / 5));
 
@@ -499,7 +495,9 @@ namespace MentalStates
         public int rippleSize = GetIntSetting("RippleSize", "5");
 
         /*
-        * 
+        * GetIntSettings 
+        *
+        * Changes integer values to match the cultural settings of the PC/laptop.
         */
         public static int GetIntSetting(string key, string defaultValue = "2")
         {
