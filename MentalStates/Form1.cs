@@ -40,7 +40,7 @@ namespace MentalStates
         private int redAnger = 0;
         private float distortionStrength = 5.0f;
 
-        float globalSpeedMultiplier = float.Parse(SettingsManager.GetSetting("SpeedMultiplier", "1.0"));
+        float globalSpeedMultiplier = GetFloatSetting("SpeedMultiplier", "1.0");
 
         private PointF lastMousePosition;
         private List<PointF> echoTrail = new();
@@ -123,6 +123,25 @@ namespace MentalStates
             this.Paint += CombinedPaint;
             this.KeyDown += HandleExit;
             this.MouseClick += ReleaseShockwave;
+        }
+        public static float GetFloatSetting(string key, string defaultValue = "0")
+        {
+            string value = SettingsManager.GetSetting(key, defaultValue);
+            if (!float.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out float result))
+            {
+                result = float.Parse(defaultValue, CultureInfo.InvariantCulture);
+            }
+            return result;
+        }
+
+        public static int GetIntSetting(string key, string defaultValue = "0")
+        {
+            string value = SettingsManager.GetSetting(key, defaultValue);
+            if (!int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out int result))
+            {
+                result = int.Parse(defaultValue, CultureInfo.InvariantCulture);
+            }
+            return result;
         }
 
         /*
@@ -292,7 +311,7 @@ namespace MentalStates
         */
         private void DrawClouds(Graphics g)
         {
-            float backgroundSize = float.Parse(SettingsManager.GetSetting("BackgroundIntensity", "0")); //initial user intensity
+            float backgroundSize = float backgroundSize = GetFloatSetting("BackgroundIntensity", "0"); //initial user intensity
             int staticDensity = (int)(200 * (1 + backgroundSize / 10)); //scale the density based on the intensity
             int maxStaticSize = (int)(1 + backgroundSize / 5); //scale the size accordingly
 
@@ -477,8 +496,20 @@ namespace MentalStates
         public int Opacity = 255;
         public Color Color;
 
-        public int rippleSize = int.Parse(SettingsManager.GetSetting("RippleSize", "5"));
+        public int rippleSize = GetIntSetting("RippleSize", "5");
 
+        /*
+        * 
+        */
+        public static int GetIntSetting(string key, string defaultValue = "2")
+        {
+            string value = SettingsManager.GetSetting(key, defaultValue);
+            if (!int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out int result))
+            {
+                result = int.Parse(defaultValue, CultureInfo.InvariantCulture);
+            }
+            return result;
+        }
         /*
          * Ripple
          * 
