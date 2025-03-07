@@ -313,7 +313,7 @@ namespace MentalStates
         {
             float backgroundSize = float backgroundSize = GetFloatSetting("BackgroundIntensity", "0"); //initial user intensity
             int staticDensity = (int)(200 * (1 + backgroundSize / 10)); //scale the density based on the intensity
-            int maxStaticSize = (int)(1 + backgroundSize / 5); //scale the size accordingly
+            int maxStaticSize = Math.Max(2, (int)(1 + backgroundSize / 5));
 
             for (int i = 0; i < staticDensity; i++)
             {
