@@ -6,7 +6,7 @@ Just note: it only escapes when you press a button! You can interact with the sc
 
 ## how the hell can i get this to work?
 
-As far as I am aware, this only works on **Windows machines** (as Windows is quite literally built on C#; **I'm not sure if the exe works for Linux/Unix (MacOS too!)** because they require different extensions for screensavers). So, if you have a Windows machine, fork or do whatever you please with the files, but you will have to build it! Uploading executables to GitHub wasn't the best move. W
+As far as I am aware, this only works on **Windows machines** (as Windows is quite literally built on C#; **I'm not sure if the exe works for Linux/Unix (MacOS too!) (Update: does work w/ Wine but at specific settings)** because they require different extensions for screensavers). So, if you have a Windows machine, fork or do whatever you please with the files, but you will have to build it! Uploading executables to GitHub wasn't the best move. W
 
 ### how to compile/build
 - open Form1.cs
